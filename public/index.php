@@ -17,8 +17,8 @@ define('APP_PATH', __DIR__ . '/../application/');
 // 定义配置文件目录和应用目录同级
 define('CONF_PATH', __DIR__.'/../config/');
 
-//钩子
-define('APP_HOOK',true);
+//定义公共目录
+define('__PUBLIC__', __DIR__.'/');
 
 // 引入自定义常量文件
 require __DIR__ . '/../extend/const.php';

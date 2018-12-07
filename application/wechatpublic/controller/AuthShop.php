@@ -24,6 +24,7 @@ class AuthShop extends CommonAuth
     {
         $phone = $request->param("phone","");
 
+
         return SendSms::sendCode($phone);
     }
 

@@ -1,0 +1,41 @@
+  #两个高精度数比较
+  #int bccomp ( string $left_operand , string $right_operand [, int $scale ] )
+  #$left=$right 返回 0
+  #$left<$right 返回 -1
+  #$left>$right 返回 1
+  #$scale 小数点位数
+
+  #两个高精度数相加
+  #string bcadd ( string $left_operand , string $right_operand [, int $scale ] )
+  #$scale 返回的小数点个数
+
+  #两个高精度数相减
+  #sstring bcsub ( string $left_operand , string $right_operand [, int $scale ] )
+  #$scale 返回的小数点个数
+
+  #两个高精度数求余/取模
+  #string bcmod ( string $left_operand , string $modulus )
+
+  #两个高精度数相除
+  #string bcdiv ( string $left_operand , string $right_operand [, int $scale ] )
+  #$scale小数点位数默认为 0
+
+
+  #两个高精度数相乘
+  #string bcmul ( string $left_operand , string $right_operand [, int $scale ] )
+  #$scale小数点位数默认为 0
+
+
+  #两个高精度数的次方值
+  #string bcpow ( string $left_operand , string $right_operand [, int $scale ] )
+  #$scale小数点位数默认为 0
+
+
+  #求高精度数的平方根
+  #string bcsqrt ( string $operand [, int $scale ] )
+  #$scale小数点位数默认为 0
+
+
+  #设置bc函数的小数点位数
+  #bool bcscale ( int $scale )
+  #$scale小数点位数默认为 0

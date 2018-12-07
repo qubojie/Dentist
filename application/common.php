@@ -13,17 +13,22 @@
  * @param bool $result
  * @param string $message
  * @param null $data
- * @return string
+ * @param code 返回状态码
+ * @return array
  */
-function comReturn($result = false , $message = '' , $data = null)
+function comReturn($result = false , $message = '' , $data = null, $code = 200)
 {
+    if ($result == false && $code == 200) {
+        $code = 500;
+    }
     $res = [
         'result'  => $result,
         'message' => $message,
-        'data'    => $data
+        'data'    => $data,
+        'code'    => $code
     ];
 
-    return json($res);
+    return $res;
 }
 
 /**
@@ -456,6 +461,34 @@ function makeTree($arr , $key_id , $parent_id)
 }
 
 /**
+ * 获取指定长度的数字,目前最长支持18位
+ * @param int $length
+ * @return bool|string
+ */
+function uniqueNumber($length = 8)
+{
+    if ($length > 21){
+        $length = 18;
+    }
+    $charId = rand(date("YmdHis"),true);//.rand()
+    $number = substr($charId , 0 , 2)
+        .substr($charId,4 , 2)
+        .substr($charId,7 , 2)
+        .substr($charId,11 , 2)
+        .rand(date("YmdHis"),true);
+
+    $lengths = strlen($number);
+    $max_start = $lengths - $length;
+    $numbers_arr = [];
+    for ($i = 0; $i < $max_start; $i ++){
+        $numbers_arr[]= $i;
+    }
+    $start_index = array_rand($numbers_arr,1);
+
+    return (substr($number , $start_index , $length));
+}
+
+/**
  * 生成唯一字符串 最长32位
  * @param int $length
  * @return bool|string
@@ -495,7 +528,7 @@ function generateReadableUUID($prefix = null)
         .chr(125);//"}"
 
     $getUUID = strtoupper(str_replace("-","",$uuid));
-    $generateReadableUUID = $prefix . date("ymdHis") . sprintf('%03D' , rand(0 , 999)) . substr($getUUID , 4 , 4);
+    $generateReadableUUID = $prefix . date("ymdHis") . sprintf('%03d' , rand(0 , 999)) . substr($getUUID , 4 , 4);
     return $generateReadableUUID;
 }
 
@@ -588,4 +621,97 @@ function getConstellation($month , $day)
     return $constellation_name;
 }
 
+/**
+ * 银行卡号验证 PHP实现Luhn算法
+ * @param $no
+ * @return string
+ */
+function checkBankCard($no){
+
+    if (!is_numeric($no)){
+        return false;
+    }
+
+    $arr_no = str_split($no);
+    $last_n = $arr_no[count($arr_no)-1];
+    krsort($arr_no);
+    $i = 1;
+    $total = 0;
+    foreach ($arr_no as $n){
+        if($i%2==0){
+            $ix = $n*2;
+            if($ix>=10){
+                $nx = 1 + ($ix % 10);
+                $total += $nx;
+            }else{
+                $total += $ix;
+            }
+        }else{
+            $total += $n;
+        }
+        $i++;
+    }
+    $total -= $last_n;
+    $total *= 9;
+    if($last_n == ($total%10)){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+
+/**
+ * 替换银行卡、手机号码为**。
+ * @param  $str '要替换的字符串'
+ * @param  $startLen '开始长度 默认4'
+ * @param  $endLen '结束长度 默认3'
+ * @return null|string|string[]
+ */
+function strReplace($str, $startLen = 4, $endLen = 3) {
+    $repStr = "";
+    if (strlen($str) < ($startLen + $endLen+1)) {
+        return $str;
+    }
+    $count = strlen($str) - $startLen - $endLen;
+    for ($i = 0; $i < $count; $i++) {
+        $repStr.="*";
+    }
+    return preg_replace('/(\d{' . $startLen . '})\d+(\d{' . $endLen . '})/', '${1}' . $repStr . '${2}', $str);
+}
+
+
+/**
+ * mysql汉字排序字段加工
+ * @param  $str '要加工的字符串'
+ * @param  $encode '编码 默认gbk'
+ * @return null|string
+ */
+function fieldOrderByEncode($str, $encode = 'gbk') {
+    if ($encode == 'utf8') {
+        $return_str = "CONVERT(".$str." USING ".$encode.") COLLATE utf8_unicode_ci";
+    }else{
+        $return_str = "CONVERT(".$str." USING ".$encode.") COLLATE gbk_chinese_ci";
+    }
+
+    return $return_str;
+}
+
+/**
+ * 获取时间区间
+ * @param $time_begin
+ * @param $time_end
+ * @return array
+ */
+function getTimeInterval($time_begin, $time_end)
+{
+    $res = [];
+    for ($i=$time_begin; $i <= $time_end; $i++) {
+        $res[] = $i.":00";
+        if ($i != $time_end) {
+            $res[] = $i.":30";
+        }
+    }
+    return $res;
+}
 

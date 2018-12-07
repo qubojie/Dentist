@@ -16,7 +16,7 @@ class SysAdminUser extends Model
      *
      * @var string
      */
-    protected $table = 'el_sys_admin_user';
+    protected $table = 'dts_sys_admin_user';
 
     /**
      * The attributes that are mass assignable.
@@ -30,7 +30,7 @@ class SysAdminUser extends Model
      *
      * @var array
      */
-    protected $hidden = ['password', 'remember_token'];
+    // protected $hidden = ['password', 'remember_token'];
 
     /**
      * 列表

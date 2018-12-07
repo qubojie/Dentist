@@ -21,3 +21,6 @@ Route::rule("test","test/Index/index");
 
 //图片上传
 Route::rule('imageUpload','services/ImageUpload/uploadLocal','post|options');
+
+//获取系统设置指定key值
+Route::rule('getSysSettingKey','services/PublicUse/getSysSettingKey','get|options');

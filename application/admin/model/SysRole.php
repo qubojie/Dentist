@@ -11,5 +11,8 @@ use think\Model;
 
 class SysRole extends Model
 {
+    protected $table = 'dts_sys_role';
+
+    protected $primaryKey = 'role_id';
 
 }

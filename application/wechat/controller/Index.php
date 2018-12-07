@@ -1,10 +1,71 @@
 <?php
 namespace app\wechat\controller;
 
-class Index
+use app\common\controller\CommonAuth;
+use app\shopadmin\model\ShopTag;
+use app\wechat\model\User;
+use think\Validate;
+
+class Index extends CommonAuth
 {
-    public function index()
+    /**
+     * 获取店铺标签
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function getShopTag()
     {
-        return '<style type="text/css">*{ padding: 0; margin: 0; } div{ padding: 4px 48px;} a{color:#2E5CD5;cursor: pointer;text-decoration: none} a:hover{text-decoration:underline; } body{ background: #fff; font-family: "Century Gothic","Microsoft yahei"; color: #333;font-size:18px;} h1{ font-size: 100px; font-weight: normal; margin-bottom: 12px; } p{ line-height: 1.6em; font-size: 42px }</style><div style="padding: 24px 48px;"> <h1>:)</h1><p> ThinkPHP V5<br/><span style="font-size:30px">十年磨一剑 - 为API开发设计的高性能框架</span></p><span style="font-size:22px;">[ V5.0 版本由 <a href="http://www.qiniu.com" target="qiniu">七牛云</a> 独家赞助发布 ]</span></div><script type="text/javascript" src="http://tajs.qq.com/stats?sId=9347272" charset="UTF-8"></script><script type="text/javascript" src="http://ad.topthink.com/Public/static/client.js"></script><thinkad id="ad_bd568ce7058a1091"></thinkad>';
+        $tag_type = $this->request->param('tag_type','');//标签类型
+
+        $shopTagModel = new ShopTag();
+
+        $res = $shopTagModel
+            ->where('tag_type',$tag_type)
+            ->order('sort,created_at DESC')
+            ->select();
+
+        return comReturn(true,config('return_message.success'),$res);
+    }
+
+    /**
+     * 刷新token
+     * @return array
+     */
+    public function refreshToken()
+    {
+        $token = $this->request->header('Token','');
+
+        $rule = [
+            "Token|令牌" => "require",
+        ];
+        $check_data = [
+            "Token" => $token,
+        ];
+        $validate = new Validate($rule);
+        if (!$validate->check($check_data)){
+            return comReturn(false,$validate->getError());
+        }
+
+        $userModel = new User();
+
+        $new_token = jmToken(time().$token);
+
+        $params = [
+            'remember_token' => $new_token,
+            'token_lastime'  => time(),
+            'updated_at'     => time()
+        ];
+
+        $res = $userModel
+            ->where('remember_token',$token)
+            ->update($params);
+
+        if ($res){
+            return comReturn(true,config('return_message.success'),$params);
+        }else{
+            return comReturn(false,config('return_message.fail'));
+        }
     }
 }

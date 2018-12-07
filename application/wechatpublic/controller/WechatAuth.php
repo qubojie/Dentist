@@ -42,7 +42,7 @@ class WechatAuth extends CommonAuth
      * @param $code
      * @return mixed
      */
-    private function getUserAccessToken($code)
+    public function getUserAccessToken($code)
     {
         $url = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=".Env::get('WECHAT_PUBLIC_APPID')."&secret=".Env::get('WECHAT_PUBLIC_APPSECRET')."&code=$code&grant_type=authorization_code";
 
@@ -55,10 +55,23 @@ class WechatAuth extends CommonAuth
      * @param $accessToken
      * @return mixed
      */
-    private function getUserInfo($accessToken)
+    public function getUserInfo($accessToken)
     {
         $url = "https://api.weixin.qq.com/sns/userinfo?access_token=$accessToken->access_token&openid=$accessToken->openid&lang=zh_CN";
         $UserInfo = file_get_contents($url);
+
+        //["openid"] => string(28) "oX2TO0W6jbJ32Sj0mgLCfww2ycVQ"
+        //  ["nickname"] => string(8) "🌈Aria"
+        //  ["sex"] => int(2)
+        //  ["language"] => string(5) "zh_CN"
+        //  ["city"] => string(0) ""
+        //  ["province"] => string(0) ""
+        //  ["country"] => string(6) "中国"
+        //  ["headimgurl"] => string(133) "http://thirdwx.qlogo.cn/mmopen/vi_32/ribFPkxjViaZiavEsn1yAffu2W0a1SoA4EbbXsIFcvia0JibvYoGhErOuMNhicR5h1XH3fRYPbEyAbFd8P0QyUfBMSSQ/132"
+        //  ["privilege"] => array(0) {
+        //  }
+        //  ["unionid"] => string(28) "ohuIK6L5VJx32RyAJ5TRVxvpuJh8"
+
         return json_decode($UserInfo, true);
     }
 

@@ -2724,4 +2724,43 @@ class Query
         }
         return $result;
     }
+
+
+    /********************************************My Function On***************************************************/
+    /**
+     * 插入记录附带其他字段
+     */
+    public function insert_ex(array $data = [], $time = false, $is_enable = false, $is_delete = false)
+    {
+        if ($time != false) {
+            $data['created_at'] = time();
+            $data['updated_at'] = time();
+        }
+        if ($is_enable != false) {
+            $data['is_enable'] = $is_enable;
+        }
+        if ($is_delete != false) {
+            $data['is_delete'] = $is_delete;
+        }
+
+        $result = $this->insert($data, false, false, null);
+
+        return $result;
+    }
+    public function insertGetId_ex(array $data, $time = false, $is_enable = false, $is_delete = false)
+    {
+        if ($time != false) {
+            $data['created_at'] = time();
+            $data['updated_at'] = time();
+        }
+        if ($is_enable != false) {
+            $data['is_enable'] = $is_enable;
+        }
+        if ($is_delete != false) {
+            $data['is_delete'] = $is_delete;
+        }
+
+        return $this->insert($data, false, true, null);
+    }
+    /********************************************My Function Off***************************************************/
 }

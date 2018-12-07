@@ -12,13 +12,10 @@
 // 应用行为扩展定义文件
 return [
     // 应用初始化
-    'app_init'     => [
-        'app\\admin\\behavior\\CheckToken',
-        'app\\common\\Hook'
-    ],
+    'app_init'     => [],
     // 应用开始
     'app_begin'    => [
-
+        'app\\common\\behavior\\CronRun'
     ],
     // 模块初始化
     'module_init'  => [],
@@ -31,8 +28,5 @@ return [
     // 应用结束
     'app_end'      => [
         'app\\common\\behavior\\CronRun'
-    ],
-    'CheckAuth' => [
-        'app\\admin\\behavior\\CheckToken'
     ],
 ];

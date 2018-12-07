@@ -9,6 +9,7 @@ namespace app\common\controller;
 
 use think\Controller;
 use think\exception\HttpException;
+use think\Log;
 use think\Request;
 
 class CommonAuth extends Controller
@@ -17,13 +18,14 @@ class CommonAuth extends Controller
      * 初始化方法,其余控制器继承此方法，进行判断登录
      * @
      */
-    public function _initialize()
+    /*public function _initialize()
     {
         parent::_initialize();
         $method = Request::instance()->method();
 
-        if ( $method != "OPTIONS"){
+        Log::info("请求头  ----- ".$method);
 
+        if ( $method != "OPTIONS"){
             $timeStamp = Request::instance()->header("timeStamp","");
             $randomStr = Request::instance()->header("randomStr","");
             $signature = Request::instance()->header("signature","");
@@ -38,5 +40,5 @@ class CommonAuth extends Controller
                 throw new HttpException(403,config('return_message.signature_invalid'));
             }
         }
-    }
+    }*/
 }

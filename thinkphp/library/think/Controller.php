@@ -13,7 +13,14 @@ namespace think;
 
 \think\Loader::import('controller/Jump', TRAIT_PATH, EXT);
 
+use app\admin\model\User;
+use app\common\model\SysSetting;
+use app\wechat\model\DtsGoods;
+use app\wechatpublic\model\ShopEnterprise;
 use think\exception\ValidateException;
+header("Access-Control-Allow-Origin:*");
+header("Access-Control-Allow-Headers:x-token,x-uid,x-token-check,x-requested-with,content-type,Host,version,token,authorization,timeStamp,randomStr,signature");
+header("Access-Control-Allow-Credentials:true");
 
 class Controller
 {
@@ -209,4 +216,348 @@ class Controller
             return true;
         }
     }
+
+    /********************************************My Function On***************************************************/
+    /**
+     * 更新之前
+     * @param $dbName '表名,不带前缀'
+     * @param $id   '主键字段'
+     * @param $idValue '主键值'
+     * @param $field '被更新的字段'
+     * @return array|false|mixed|\PDOStatement|string|\think\Model
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     * @return  array '更新之前的数据'
+     */
+    public function updateBefore($dbName,$id,$idValue,$field)
+    {
+        $res = Db::name("$dbName")
+            ->where("$id","$idValue")
+            ->field($field)
+            ->find();
+
+        $res = json_decode(json_encode($res),true);
+        return $res;
+    }
+
+    /**
+     * 日志记录数组数据不一致的对比
+     * @param $oldRes '更新前数据'
+     * @param $newRes '更新后数据'
+     * @return string
+     */
+    public function checkDifAfter($oldRes,$newRes)
+    {
+        $res = "";
+        foreach ($oldRes as $key => $val){
+            if ($oldRes[$key] !== $newRes[$key]){
+                $res .= $key . "('" .$oldRes[$key]. "'=>'" . $newRes[$key] ."'),";
+            }
+        }
+
+        return $res;
+    }
+
+    /**
+     * 路由翻译
+     * @param $route
+     * @param $dbName
+     * @return string
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     * $this->request->routeInfo()
+     */
+    public function routeTranslation($route,$dbName)
+    {
+        $rule = $route['rule'];
+        $rule_zero  = $rule[0];
+        $rule_one   = $rule[1];
+        $rule_two   = $rule[2];
+
+        if (isset($rule[3])){
+            $rule_three = $rule[3];
+            $ruleStr = $rule_zero . "," . $rule_one . "," .  $rule_two . "," . $rule_three;
+        }else{
+            $ruleStr = $rule_zero . "," . $rule_one . "," .  $rule_two;
+        }
+
+        $res = $this->getMenuName($ruleStr,$dbName);
+
+        return $res;
+    }
+
+    /**
+     * 将路由翻译成中文
+     * @param $ruleName
+     * @param $dbName
+     * @return string
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function getMenuName($ruleName,$dbName)
+    {
+        $urlArr = explode(",",$ruleName);
+        $res = "";
+        foreach ($urlArr as $key => $val){
+            $url = $urlArr[$key];
+            $nameRes = Db::name($dbName)
+                ->where('url',$url)
+                ->field('title')
+                ->find();
+            $nameRes = json_decode(json_encode($nameRes),true);
+            if (!empty($nameRes)){
+                $res .= $nameRes['title'] . "->";
+            }
+        }
+        return $res;
+    }
+
+    /**
+     * 记录系统操作日志
+     * @param $log_time     '记录时间'
+     * @param $action_user  '操作管理员名'
+     * @param $log_info     '操作描述'
+     * @param $ip_address   '操作登录的地址'
+     * @param $sid   '店铺id'
+     * @return bool
+     */
+    public function addSysLog($log_time,$action_user='0',$log_info='0',$ip_address='0.0.0.0',$sid = '')
+    {
+        if (empty($log_time)){
+            $log_time = time();
+        }
+
+        if (!empty($sid)){
+            $params = [
+                'sid'        => $sid,
+                'log_time'   => $log_time,
+                'action_user'=> $action_user,
+                'log_info'   => $log_info,
+                'ip_address' => $ip_address
+            ];
+            $dbName = 'shop_log';
+        }else{
+            $params = [
+                'log_time'   => $log_time,
+                'action_user'=> $action_user,
+                'log_info'   => $log_info,
+                'ip_address' => $ip_address
+            ];
+            $dbName = 'sys_log';
+        }
+
+        $res = Db::name("$dbName")
+            ->insert($params);
+
+        if ($res !== false){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * 给数据添加标签
+     * @param $info '描述信息'
+     * @param $patternElement '标签name'
+     * @param $patternClass 'name的class属性'
+     * @return string
+     */
+    public function infoAddClass($info,$patternClass,$patternElement = "span")
+    {
+        if (empty($patternElement)){
+            $patternElement = "span";
+        }
+
+        $res = '<' . $patternElement. ' class="' . $patternClass . '" >'
+            . $info
+            . '</' . $patternElement . '>';
+
+        return $res;
+    }
+
+
+    /**
+     * 记录操作日志
+     * @param $sid '店铺id'
+     * @param $gid '商品id'
+     * @param $oid '订单id'
+     * @param $action ''
+     * @param $reason '操作原因'
+     * @param $name '操作人名字'
+     * @return string
+     */
+    public function addAdminLog($gid,$oid,$action,$name,$sid = "", $uid = "",$reason = "")
+    {
+
+        if (!empty($sid)){
+            $params = [
+                'sid'         => $sid,
+                'gid'         => $gid,
+                'oid'         => $oid,
+                'action'      => $action,
+                'action_user' => $name,
+                'action_time' => time()
+            ];
+            $dbName = 'shop_admin_log';
+        }else{
+            $params = [
+                'uid'         => $uid,
+                'gid'         => $gid,
+                'oid'         => $oid,
+                'action'      => $action,
+                'reason'      => $reason,
+                'action_user' => $name,
+                'action_time' => time()
+            ];
+            $dbName = 'sys_admin_log';
+        }
+
+        $res = Db::name("$dbName")
+            ->insert($params);
+
+        if ($res !== false){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public function addSysAdminLog($id, $action, $name, $reason = "", $sid = "")
+    {
+
+        $params = [
+            'id'          => $id,
+            'action'      => $action,
+            'reason'      => $reason,
+            'action_user' => $name,
+            'action_time' => time()
+        ];
+
+        $res = Db::name("sys_admin_log")
+            ->insert($params);
+
+        if ($res !== false){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+
+    /**
+     * 根据 wxid(unid)判断是否加盟
+     * @param $unionid
+     * @return array|false|mixed|\PDOStatement|string|\think\Model
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function checkIsJoin($unionid)
+    {
+        $shopEnterpriseModel = new ShopEnterprise();
+
+        $res = $shopEnterpriseModel
+            ->where("wxid",$unionid)
+            ->find();
+
+        $res = json_decode(json_encode($res),true);
+        if (!empty($res)) {
+            $review_desc = $res['review_desc'];
+            $res['review_desc'] = htmlspecialchars_decode($review_desc);
+        }
+        return $res;
+    }
+
+    /**
+     * 根据eid获取加盟申请信息
+     * @param $eid
+     * @return array|false|mixed|\PDOStatement|string|\think\Model
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function eidGetJoinInfo($eid)
+    {
+        $shopEnterpriseModel = new ShopEnterprise();
+        $res = $shopEnterpriseModel
+            ->where("eid",$eid)
+            ->find();
+
+        $res = json_decode(json_encode($res),true);
+        return $res;
+    }
+
+    /**
+     * 根据gid获取商品信息
+     * @param $gid
+     * @return array|false|\PDOStatement|string|\think\Model
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function gidGetInfo($gid)
+    {
+        $goodsModel = new DtsGoods();
+
+        $res = $goodsModel
+            ->where('gid',$gid)
+            ->find();
+
+        return $res;
+    }
+
+    /**
+     * 判断此手机号码是否已绑定
+     * @param $phone
+     * @return bool
+     */
+    public function checkPhoneIsOnly($phone,$uid)
+    {
+        $userModel = new User();
+
+        $is_exist = $userModel
+            ->where('phone',$phone)
+            ->where('uid','neq',$uid)
+            ->count();
+
+        if ($is_exist){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    /**
+     * 获取需要的后台设置的系统信息
+     * @param $keys
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function getSettingInfo($keys)
+    {
+        $key_array = explode(",",$keys);
+
+        $sysSettingModel = new SysSetting();
+        $res = array();
+
+        foreach ($key_array as $key => $val) {
+            $info = $sysSettingModel
+                ->where('key',$val)
+                ->field('value')
+                ->find();
+
+            $info = json_decode($info,true);
+            $res[$val] = $info['value'];
+        }
+
+        return $res;
+    }
+
+    /********************************************My Function Off***************************************************/
 }

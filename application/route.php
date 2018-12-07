@@ -1,19 +1,21 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: qubojie
- * Date: 2018/10/12
- * Time: 下午3:00
- */
-use think\Route;
-Route::group(['name' => 'admin' , 'prefix' => 'admin/'],function (){
+// +----------------------------------------------------------------------
+// | ThinkPHP [ WE CAN DO IT JUST THINK ]
+// +----------------------------------------------------------------------
+// | Copyright (c) 2006~2016 http://thinkphp.cn All rights reserved.
+// +----------------------------------------------------------------------
+// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
+// +----------------------------------------------------------------------
+// | Author: liu21st <liu21st@gmail.com>
+// +----------------------------------------------------------------------
 
-    Route::group(['name' => 'adminUser'],function (){
-        Route::get('index','adminUser.User/index');
+return [
+    '__pattern__' => [
+        'name' => '\w+',
+    ],
+    '[hello]'     => [
+        ':id'   => ['index/hello', ['method' => 'get'], ['id' => '\d+']],
+        ':name' => ['index/hello', ['method' => 'post']],
+    ],
 
-    });
-    Route::group(['name' => 'index'],function (){
-        Route::get('index','Index/index');
-        Route::post('adds','Index/add');
-    });
-});
+];

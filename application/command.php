@@ -9,6 +9,4 @@
 // | Author: yunwuxin <448901948@qq.com>
 // +----------------------------------------------------------------------
 
-return [
-    'app\common\lib\Crond'
-];
+return [ 'app\common\lib\Crond'];

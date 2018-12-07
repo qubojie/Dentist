@@ -31,11 +31,11 @@ class SendSms
         $code = getRandCode(4);
 
         if (empty($content)){
-            $content = '【牙闺蜜】您在App名称请求的手机验证码为 %$code%，如非本人操作，请及时反馈在线客服。';
+            $content = '【牙闺蜜】您的验证码为 %$code%，如非本人操作，请忽略。';
         }
 
         //缓存验证码
-        Cache::set("sms_verify_code_" . $phone, $code, 300);
+        Cache::set("sms_verify_code_" . $phone, $code, 1800);
 
         $content = str_replace('%$code%',$code,$content);
 
@@ -77,7 +77,7 @@ class SendSms
     public static function sendCode($phone)
     {
         $rule = [
-            "phone|电话号码"  => "require|regex:1[3-8]{1}[0-9]{9}",
+            "phone|电话号码"  => "require|regex:1[0-9]{1}[0-9]{9}",
         ];
         $check_data = [
             "phone"  => $phone,
@@ -105,7 +105,7 @@ class SendSms
     public static function checkCode($phone,$code)
     {
         $rule = [
-            "phone|电话号码"  => "require|regex:1[3-8]{1}[0-9]{9}",
+            "phone|电话号码"  => "require|regex:1[0-9]{1}[0-9]{9}",
             "code|验证码"     => "require",
         ];
         $check_data = [
